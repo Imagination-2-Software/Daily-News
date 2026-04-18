@@ -5,7 +5,9 @@
  *   npm run seed
  */
 
-import 'dotenv/config';
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+config();
 import { getSupabaseAdmin } from '../lib/supabase/admin';
 import { staticBlogPosts } from '../lib/blog-data';
 

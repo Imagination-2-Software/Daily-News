@@ -13,7 +13,9 @@
  * Run in CI:   GitHub Actions cron (see .github/workflows/daily-blog.yml)
  */
 
-import 'dotenv/config';
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+config();
 import { getSupabaseAdmin } from '../lib/supabase/admin';
 import { fetchTrendingHeadlines, type Headline } from './lib/rss';
 import { generateEditorial } from './lib/gemini';
