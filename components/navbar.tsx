@@ -1,90 +1,110 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { Search, Menu, X, UserCircle2, LogIn, Mail, LayoutDashboard } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { Search, Menu, X, ArrowRight } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { SearchCommand } from '@/components/search-command';
+import { useEffect, useState } from 'react';
 
+/**
+ * Clearer, more confident labels than the previous editorial jargon.
+ * "Insights/Curation/Perspectives" → shorter, sharper signposts.
+ */
 const navItems = [
-  { label: 'Insights', href: '/' },
-  { label: 'Curation', href: '/curation' },
-  { label: 'Perspectives', href: '/perspectives' },
-  { label: 'Archives', href: '/archives' },
-  { label: 'About', href: '/about' },
+  { label: 'Latest',   href: '/',             desc: "Today's dispatch" },
+  { label: 'Topics',   href: '/curation',     desc: 'Browse by category' },
+  { label: 'Analysis', href: '/perspectives', desc: 'Long-form essays' },
+  { label: 'Archive',  href: '/archives',     desc: 'Everything we\u2019ve published' },
+  { label: 'About',    href: '/about',        desc: 'Mission & masthead' },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const searchRef = useRef<HTMLInputElement>(null);
-  const accountRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/' || pathname.startsWith('/blog');
     return pathname.startsWith(href);
   };
 
+  // Close overlays on route change.
   useEffect(() => {
     setMobileOpen(false);
     setSearchOpen(false);
-    setAccountOpen(false);
   }, [pathname]);
 
+  // Global Cmd/Ctrl+K shortcut opens the search modal; Esc closes mobile nav.
   useEffect(() => {
-    if (searchOpen) searchRef.current?.focus();
-  }, [searchOpen]);
-
-  useEffect(() => {
-    function onClick(e: MouseEvent) {
-      if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
-        setAccountOpen(false);
-      }
-    }
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        setSearchOpen(false);
-        setAccountOpen(false);
+      const isK = e.key === 'k' || e.key === 'K';
+      if (isK && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen(true);
+      } else if (e.key === 'Escape') {
         setMobileOpen(false);
+      } else if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        // Slash-to-search — only fire when the user isn't already typing.
+        const t = e.target as HTMLElement | null;
+        const typing =
+          t &&
+          (t.tagName === 'INPUT' ||
+            t.tagName === 'TEXTAREA' ||
+            t.isContentEditable);
+        if (!typing) {
+          e.preventDefault();
+          setSearchOpen(true);
+        }
       }
     }
-    document.addEventListener('mousedown', onClick);
     document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onClick);
-      document.removeEventListener('keydown', onKey);
-    };
+    return () => document.removeEventListener('keydown', onKey);
   }, []);
-
-  function submitSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const q = query.trim();
-    if (!q) return;
-    router.push(`/search?q=${encodeURIComponent(q)}`);
-  }
 
   return (
     <>
-      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-[#faf8f4]/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <Link href="/" className="flex items-center">
-            <span className="font-playfair text-xl font-bold italic tracking-tight text-orange-600">
-              InFocusIT
+      {/* Skip link for keyboard users */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-surface-lowest focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-ink focus:shadow-ambient"
+      >
+        Skip to main content
+      </a>
+
+      <nav
+        aria-label="Primary"
+        className="relative z-40 border-b border-outline-variant bg-surface"
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4">
+          {/* Brand — clean Inter wordmark, no serif, no italic */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 focus:outline-none"
+            aria-label="Infocus-IT home"
+          >
+            <span
+              aria-hidden="true"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-primary text-[11px] font-bold text-white"
+            >
+              iF
+            </span>
+            <span className="text-[17px] font-bold tracking-[-0.02em] text-on-bg">
+              Infocus-<span className="text-primary">IT</span>
             </span>
           </Link>
 
-          <div className="hidden items-center gap-10 md:flex">
+          {/* Desktop nav — normal-case, medium weight, readable */}
+          <div className="hidden items-center gap-7 lg:flex">
             {navItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className={`text-xs font-semibold uppercase tracking-[0.2em] transition-colors ${
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                className={`text-[14px] font-medium transition-colors ${
                   isActive(item.href)
-                    ? 'text-orange-600 underline underline-offset-8 decoration-orange-600'
-                    : 'text-gray-700 hover:text-orange-600'
+                    ? 'text-primary'
+                    : 'text-on-surface-variant hover:text-on-bg'
                 }`}
               >
                 {item.label}
@@ -92,120 +112,70 @@ export function Navbar() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Actions — compact */}
+          <div className="flex items-center gap-1">
             <button
-              aria-label="Search"
-              onClick={() => setSearchOpen((v) => !v)}
-              className={`rounded-full p-2 transition-colors ${
-                searchOpen ? 'bg-orange-100 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-orange-600'
-              }`}
+              aria-label="Open search"
+              onClick={() => setSearchOpen(true)}
+              title="Search (⌘K)"
+              className="inline-flex h-9 items-center gap-2 rounded-md px-2.5 text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-bg md:ghost-border md:px-3"
             >
-              <Search className="h-4 w-4" />
+              <Search className="h-4 w-4" aria-hidden="true" />
+              <kbd className="hidden items-center rounded border border-outline-variant bg-surface-low px-1.5 py-0.5 font-mono text-[10px] text-on-surface-muted md:inline-flex">
+                ⌘K
+              </kbd>
             </button>
 
-            <div ref={accountRef} className="relative">
-              <button
-                aria-label="Account"
-                onClick={() => setAccountOpen((v) => !v)}
-                className={`rounded-full p-2 transition-colors ${
-                  accountOpen ? 'bg-orange-100 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-orange-600'
-                }`}
-              >
-                <UserCircle2 className="h-5 w-5" />
-              </button>
+            <ThemeToggle />
 
-              {accountOpen && (
-                <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg ring-1 ring-black/5">
-                  <div className="border-b border-gray-100 bg-[#f0ece4] px-4 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-orange-600">
-                      Guest
-                    </p>
-                    <p className="mt-0.5 font-playfair text-sm font-semibold text-gray-900">
-                      Not signed in.
-                    </p>
-                  </div>
-                  <div className="py-1">
-                    <Link
-                      href="/signin"
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-gray-700 transition-colors hover:bg-[#faf8f4] hover:text-orange-600"
-                    >
-                      <LogIn className="h-3.5 w-3.5" />
-                      Sign In
-                    </Link>
-                    <a
-                      href="#newsletter"
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-gray-700 transition-colors hover:bg-[#faf8f4] hover:text-orange-600"
-                    >
-                      <Mail className="h-3.5 w-3.5" />
-                      Weekly Brief
-                    </a>
-                    <Link
-                      href="/admin"
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-gray-700 transition-colors hover:bg-[#faf8f4] hover:text-orange-600"
-                    >
-                      <LayoutDashboard className="h-3.5 w-3.5" />
-                      Control Room
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-
+            {/* Mobile toggle */}
             <button
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileOpen}
+              aria-controls="navbar-mobile"
               onClick={() => setMobileOpen((v) => !v)}
-              className="rounded-full p-2 text-gray-700 transition-colors hover:bg-gray-100 hover:text-orange-600 md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary-ink lg:hidden"
             >
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
             </button>
           </div>
         </div>
 
-        {searchOpen && (
-          <div className="border-t border-gray-200 bg-[#faf8f4]">
-            <form
-              onSubmit={submitSearch}
-              className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4"
-            >
-              <Search className="h-4 w-4 text-gray-500" />
-              <input
-                ref={searchRef}
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search editorials, authors, topics…"
-                className="flex-1 bg-transparent text-base font-playfair text-gray-900 placeholder:text-gray-400 focus:outline-none"
-              />
-              <button
-                type="submit"
-                className="rounded-sm bg-orange-700 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-white transition-colors hover:bg-orange-800"
-              >
-                Search
-              </button>
-            </form>
-          </div>
-        )}
-
+        {/* Mobile drawer */}
         {mobileOpen && (
-          <div className="border-t border-gray-200 bg-[#faf8f4] md:hidden">
-            <div className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-3">
+          <div id="navbar-mobile" className="glass-low lg:hidden">
+            <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
               {navItems.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className={`rounded-md px-3 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition-colors ${
+                  aria-current={isActive(item.href) ? 'page' : undefined}
+                  className={`group flex items-center justify-between rounded-lg px-4 py-3 transition-colors ${
                     isActive(item.href)
-                      ? 'bg-orange-100 text-orange-700'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-orange-600'
+                      ? 'bg-surface-container text-primary-ink'
+                      : 'text-on-surface hover:bg-surface-container'
                   }`}
                 >
-                  {item.label}
+                  <span className="flex flex-col">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.24em]">
+                      {item.label}
+                    </span>
+                    <span className="mt-0.5 text-[11px] text-on-surface-muted">{item.desc}</span>
+                  </span>
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="h-3.5 w-3.5 -translate-x-1 text-on-surface-muted opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+                  />
                 </Link>
               ))}
             </div>
           </div>
         )}
       </nav>
+
+      {/* Global Cmd+K search modal */}
+      <SearchCommand open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
+

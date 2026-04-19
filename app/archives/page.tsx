@@ -6,8 +6,8 @@ import { PageHeader } from '@/components/page-header';
 import { getAllPosts, type BlogPost } from '@/lib/blog-data';
 
 export const metadata = {
-  title: 'Archives | InFocusIT',
-  description: 'The complete InFocusIT archive — every editorial we have published, organized by date.',
+  title: 'Archives | Infocus-IT',
+  description: 'The complete Infocus-IT archive — every editorial we have published, organized by date.',
 };
 
 export const revalidate = 300;
@@ -43,8 +43,9 @@ export default async function ArchivesPage() {
   const totalAuthors = new Set(blogPosts.map((p) => p.author)).size;
 
   return (
-    <div className="min-h-screen bg-[#faf8f4]">
+    <div className="min-h-screen bg-surface">
       <Navbar />
+      <main id="main">
 
       <PageHeader
         kicker="The Archive Project"
@@ -54,19 +55,32 @@ export default async function ArchivesPage() {
       />
 
       {/* Stats */}
-      <section className="px-6 py-12">
-        <div className="mx-auto max-w-6xl">
+      <section className="px-6 py-14">
+        <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {[
-              { label: 'Editorials Published', value: totalEditorials },
+              { label: 'Editorials Published', value: totalEditorials, emphasis: true },
               { label: 'Subject Categories', value: totalCategories },
               { label: 'Contributing Authors', value: totalAuthors },
             ].map((stat) => (
-              <div key={stat.label} className="rounded-lg bg-[#f0ece4] p-6">
-                <p className="font-playfair text-5xl font-bold text-orange-600">
+              <div
+                key={stat.label}
+                className={`rounded-2xl p-6 shadow-ambient-sm ${
+                  stat.emphasis ? 'bg-gradient-signature text-white' : 'bg-surface-lowest'
+                }`}
+              >
+                <p
+                  className={`font-playfair text-5xl font-bold ${
+                    stat.emphasis ? 'text-white' : 'text-gradient-signature'
+                  }`}
+                >
                   {String(stat.value).padStart(2, '0')}
                 </p>
-                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-700">
+                <p
+                  className={`mt-3 text-[10px] font-semibold uppercase tracking-[0.24em] ${
+                    stat.emphasis ? 'text-white/85' : 'text-on-surface-variant'
+                  }`}
+                >
                   {stat.label}
                 </p>
               </div>
@@ -76,35 +90,37 @@ export default async function ArchivesPage() {
       </section>
 
       {/* Grouped timeline */}
-      <section className="px-6 pb-16">
-        <div className="mx-auto max-w-6xl space-y-16">
+      <section className="px-6 pb-20">
+        <div className="mx-auto max-w-7xl space-y-16">
           {grouped.map((group) => (
             <div key={group.key}>
-              <div className="mb-6 flex items-center justify-between border-b border-gray-300 pb-3">
-                <h2 className="font-playfair text-2xl font-bold text-gray-900">{group.label}</h2>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-500">
+              <header className="mb-6 flex items-end justify-between">
+                <h2 className="accent-bar font-playfair text-2xl font-semibold text-on-bg">
+                  {group.label}
+                </h2>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-on-surface-muted">
                   {group.items.length} editorial{group.items.length === 1 ? '' : 's'}
                 </span>
-              </div>
+              </header>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {group.items.map((post) => (
                   <Link
                     key={post.slug}
                     href={`/blog/${post.slug}`}
-                    className="group flex gap-4 rounded-lg p-3 transition-colors hover:bg-[#f0ece4]"
+                    className="group flex gap-4 rounded-xl p-3 transition-colors hover:bg-surface-container"
                   >
-                    <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-md bg-gray-900">
-                      <Image src={post.coverImage} alt={post.title} fill className="object-cover" />
+                    <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-lg bg-surface-high">
+                      <Image src={post.coverImage} alt={post.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-orange-600">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-primary-ink">
                         {post.category} · {post.readTime} min
                       </p>
-                      <h3 className="mt-1 line-clamp-2 font-playfair text-base font-semibold leading-snug text-gray-900 transition-colors group-hover:text-orange-600">
-                        {post.title}.
+                      <h3 className="mt-1 line-clamp-2 font-playfair text-base font-semibold leading-snug text-on-bg transition-colors group-hover:text-primary-ink">
+                        {post.title}
                       </h3>
-                      <p className="mt-1 text-xs text-gray-500">
+                      <p className="mt-1 text-xs text-on-surface-muted">
                         {post.author} · {post.date}
                       </p>
                     </div>
@@ -116,6 +132,7 @@ export default async function ArchivesPage() {
         </div>
       </section>
 
+      </main>
       <Footer />
     </div>
   );

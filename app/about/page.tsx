@@ -3,7 +3,7 @@ import { Footer } from '@/components/footer';
 import { PageHeader } from '@/components/page-header';
 
 export const metadata = {
-  title: 'About | InFocusIT',
+  title: 'About | Infocus-IT',
   description: 'A digital destination for those who seek depth in the age of speed.',
 };
 
@@ -26,43 +26,34 @@ const principles = [
   },
 ];
 
-const masthead = [
-  { role: 'Editor-in-Chief', name: 'Elena Rodriguez' },
-  { role: 'Threat Intelligence Lead', name: 'Marcus Chen' },
-  { role: 'Senior Security Researcher', name: 'Dr. Sarah Williams' },
-  { role: 'Cryptography Editor', name: 'Prof. Alexander Norton' },
-  { role: 'Incident Response Editor', name: 'David Kumar' },
-  { role: 'Awareness & Training', name: 'James Peterson' },
-];
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#faf8f4]">
+    <div className="min-h-screen bg-surface">
       <Navbar />
+      <main id="main">
 
       <PageHeader
         kicker="About the Journal"
         title="A digital destination for the"
         accent="security analyst."
-        subtitle="InFocusIT is an independent editorial practice covering cybersecurity with the rigor of a research lab and the voice of a magazine."
+        subtitle="Infocus-IT is an independent editorial practice covering cybersecurity with the rigor of a research lab and the voice of a magazine."
       />
 
       {/* Mission */}
-      <section className="px-6 py-12 md:py-16">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 md:grid-cols-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-orange-600">
-              Our Mission
-            </p>
+      <section className="px-6 py-16 md:py-20">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 md:grid-cols-12">
+          <div className="md:col-span-4">
+            <p className="label-overline">Our Mission</p>
           </div>
-          <div className="md:col-span-2">
-            <p className="font-playfair text-2xl leading-snug text-gray-900 md:text-3xl">
+          <div className="md:col-span-8">
+            <p className="font-playfair text-2xl leading-snug text-on-bg md:text-[2rem]">
               We document how adversaries actually operate, how defenders actually respond, and the
               quiet engineering decisions that shape both.
             </p>
-            <p className="mt-6 text-base leading-relaxed text-gray-600">
+            <p className="mt-6 text-[15px] leading-relaxed text-on-surface-variant">
               Founded to serve practitioners who were tired of vendor marketing dressed up as
-              research, InFocusIT publishes editorial content designed to survive the next hype
+              research, Infocus-IT publishes editorial content designed to survive the next hype
               cycle. Our work is read by CISOs, threat hunters, detection engineers, and the policy
               teams that write the rules they operate under.
             </p>
@@ -71,25 +62,31 @@ export default function AboutPage() {
       </section>
 
       {/* Principles */}
-      <section className="px-6 py-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-8 flex items-center justify-between border-b border-gray-300 pb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-700">
+      <section className="px-6 py-10">
+        <div className="mx-auto max-w-7xl">
+          <header className="mb-10">
+            <h2 className="accent-bar font-playfair text-2xl font-semibold text-on-bg">
               Editorial Principles
             </h2>
-            <span className="h-[2px] w-16 bg-orange-600" />
-          </div>
+          </header>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {principles.map((p, i) => (
-              <div key={p.title} className="rounded-lg bg-[#f0ece4] p-8">
-                <p className="font-playfair text-4xl font-bold text-orange-600">
+              <div
+                key={p.title}
+                className="group relative overflow-hidden rounded-2xl bg-surface-lowest p-8 shadow-ambient-sm transition-transform hover:-translate-y-0.5"
+              >
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-y-0 left-0 w-1 bg-gradient-signature opacity-0 transition-opacity group-hover:opacity-100"
+                />
+                <p className="font-playfair text-5xl font-bold text-gradient-signature">
                   {String(i + 1).padStart(2, '0')}
                 </p>
-                <h3 className="mt-4 font-playfair text-xl font-semibold text-gray-900">
-                  {p.title}.
+                <h3 className="mt-4 font-playfair text-xl font-semibold text-on-bg">
+                  {p.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-gray-600">{p.body}</p>
+                <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">{p.body}</p>
               </div>
             ))}
           </div>
@@ -97,92 +94,98 @@ export default function AboutPage() {
       </section>
 
       {/* Pull quote */}
-      <section className="px-6 py-16">
+      <section className="px-6 py-20">
         <div className="mx-auto max-w-4xl">
-          <blockquote className="border-l-2 border-orange-600 pl-8">
-            <p className="font-playfair text-3xl italic leading-snug text-gray-900 md:text-4xl">
-              Security is not a product we review. It is a discipline we practice — in the open,
-              with receipts.
-            </p>
-            <footer className="mt-6 text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-500">
-              — The InFocusIT Manifesto
-            </footer>
-          </blockquote>
+          <figure className="flex items-center">
+            <div aria-hidden="true" className="mr-8 w-1 self-stretch rounded-full bg-gradient-signature" />
+            <div>
+              <blockquote className="font-playfair text-3xl font-medium italic leading-[1.2] text-on-bg md:text-[2.5rem]">
+                <span className="text-primary-ink">&ldquo;</span>Security is not a product we
+                review. It is a discipline we practice — in the open, with receipts.
+                <span className="text-primary-ink">&rdquo;</span>
+              </blockquote>
+              <figcaption className="mt-6 text-[10px] font-semibold uppercase tracking-[0.28em] text-on-surface-muted">
+                — The Infocus-IT Manifesto
+              </figcaption>
+            </div>
+          </figure>
         </div>
       </section>
 
-      {/* Masthead */}
-      <section className="px-6 pb-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-8 flex items-center justify-between border-b border-gray-300 pb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-700">
-              Masthead
-            </h2>
-            <span className="h-[2px] w-16 bg-orange-600" />
-          </div>
+      {/* How we publish — replaces the old masthead. Honest about method. */}
+      <section className="px-6 pb-20">
+        <div className="mx-auto max-w-7xl">
+          <header className="mb-10">
+            <h2 className="accent-bar text-2xl font-bold text-on-bg">How we publish</h2>
+          </header>
 
-          <div className="grid grid-cols-1 gap-x-10 gap-y-6 md:grid-cols-2">
-            {masthead.map((m) => (
-              <div key={m.name} className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-xs font-bold text-white">
-                  {m.name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .slice(0, 2)
-                    .join('')}
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-orange-600">
-                    {m.role}
-                  </p>
-                  <p className="font-playfair text-lg font-semibold text-gray-900">{m.name}</p>
-                </div>
+          <div className="rounded-2xl bg-surface-lowest p-8 shadow-ambient-sm md:p-10">
+            <div className="flex items-start gap-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+                IT
               </div>
-            ))}
+              <div>
+                <p className="label-overline">Infocus-IT Team</p>
+                <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-on-surface-variant">
+                  Every editorial is published under the <strong className="text-on-bg">Infocus-IT Team</strong> byline.
+                  Our daily pipeline reads primary-source reporting from BleepingComputer,
+                  The Hacker News, Krebs on Security, and Dark Reading, then drafts and revises
+                  analysis under an editorial voice tuned for working defenders.
+                </p>
+                <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-on-surface-variant">
+                  We don&rsquo;t fabricate CVEs, victim names, or version numbers. When specifics
+                  appear in an editorial, they came from the cited source. When they&rsquo;re
+                  missing, we speak in categories and point you back to the vendor advisory.
+                </p>
+                <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-on-surface-variant">
+                  No vendor sponsorship. No ghostwritten expert bylines. One team byline, one
+                  editorial voice, one newsletter a week.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Contact CTA */}
-      <section className="px-6 pb-20">
-        <div className="mx-auto max-w-6xl rounded-lg border-2 border-orange-600 p-6 md:p-10">
-          <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2">
-            <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.25em] text-orange-600">
-                Tips & Correspondence
-              </p>
-              <h3 className="mb-4 font-playfair text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
-                Have a story for us?
-              </h3>
-              <p className="max-w-md text-sm leading-relaxed text-gray-600">
-                We accept anonymous tips, vulnerability disclosures, and editorial pitches.
-                Reach the desk directly — we read every message.
-              </p>
-            </div>
-            <div className="space-y-3 text-sm text-gray-700">
-              <p>
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-500">
-                  Newsroom
-                </span>
-                desk@infocusit.example
-              </p>
-              <p>
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-500">
-                  Secure Tips
-                </span>
-                tips@infocusit.example · Signal available on request
-              </p>
-              <p>
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-500">
-                  Editorial Pitches
-                </span>
-                pitch@infocusit.example
-              </p>
+      <section className="px-6 pb-24">
+        <div className="mx-auto max-w-7xl">
+          <div className="relative overflow-hidden rounded-2xl bg-surface-container p-8 shadow-ambient-sm md:p-12">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-signature opacity-20 blur-3xl"
+            />
+            <div className="relative grid grid-cols-1 items-start gap-8 md:grid-cols-2">
+              <div>
+                <p className="label-overline">Tips & Correspondence</p>
+                <h3 className="mt-3 font-playfair text-3xl font-semibold tracking-tight text-on-bg md:text-[2.25rem]">
+                  Have a story for us?
+                </h3>
+                <p className="mt-4 max-w-md text-[15px] leading-relaxed text-on-surface-variant">
+                  We accept anonymous tips, vulnerability disclosures, and editorial pitches.
+                  Reach the desk directly — we read every message.
+                </p>
+              </div>
+              <div className="space-y-4 text-sm text-on-surface-variant">
+                {[
+                  { label: 'Newsroom', value: 'editor@infocusit.in' },
+                  { label: 'Secure Tips', value: 'tips@infocusit.in · Signal available on request' },
+                  { label: 'Editorial Pitches', value: 'pitch@infocusit.in' },
+                ].map((row) => (
+                  <div key={row.label} className="rounded-xl bg-surface-lowest p-4 shadow-ambient-sm">
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.24em] text-primary-ink">
+                      {row.label}
+                    </span>
+                    <span className="mt-1 block text-on-bg">{row.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
+      </main>
       <Footer />
     </div>
   );

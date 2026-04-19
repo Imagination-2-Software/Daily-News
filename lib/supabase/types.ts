@@ -28,6 +28,18 @@ export type AutomationRunRow = {
   logs: Record<string, unknown> | null;
 };
 
+export type SubscriberRow = {
+  id: string;
+  email: string;
+  status: 'active' | 'unsubscribed' | 'bounced';
+  unsubscribe_token: string;
+  source: string | null;
+  last_sent_at: string | null;
+  bounce_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export function isSupabaseConfigured(): boolean {
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,

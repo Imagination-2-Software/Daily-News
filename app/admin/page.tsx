@@ -1,294 +1,384 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import {
+  ArrowUpRight,
+  PenLine,
+  Radio,
+  Eye,
+  BookOpen,
+  PlusCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+} from 'lucide-react';
+import { getAllPosts, type BlogPost } from '@/lib/blog-data';
+import { getAdminStatus, formatRelative } from '@/lib/admin-status';
+import { isSupabaseConfigured, type PostRow } from '@/lib/supabase/types';
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
-import { getAllPosts } from '@/lib/blog-data';
-import { isSupabaseConfigured, type AutomationRunRow } from '@/lib/supabase/types';
 import { RunNowButton } from '@/components/admin/run-now-button';
 
 export const dynamic = 'force-dynamic';
 
-async function fetchRuns(): Promise<AutomationRunRow[]> {
-  if (!isSupabaseConfigured()) return [];
+// The overview is organised around three questions an admin actually asks
+// when they open this page:
+//   1. Is the pipeline healthy? (top banner — primary concern)
+//   2. What did we publish most recently? (latest-post card)
+//   3. What do I need to do right now? (quick actions)
+// Category mix / long run table go to /admin/automation — they're reference
+// material, not decision-driving data.
+
+async function fetchAdminCatalog(): Promise<{
+  total: number;
+  published: number;
+  drafts: number;
+  retired: number;
+  latest: BlogPost | null;
+}> {
+  if (!isSupabaseConfigured()) {
+    const fallback = await getAllPosts();
+    return {
+      total: fallback.length,
+      published: fallback.length,
+      drafts: 0,
+      retired: 0,
+      latest: fallback[0] ?? null,
+    };
+  }
   const supabase = createClient(await cookies());
   const { data } = await supabase
-    .from('automation_runs')
+    .from('posts')
     .select('*')
-    .order('started_at', { ascending: false })
-    .limit(6);
-  return (data as AutomationRunRow[]) ?? [];
+    .order('created_at', { ascending: false });
+  const rows = (data as PostRow[]) ?? [];
+  const published = rows.filter((r) => r.status === 'published');
+  const latestRow = published[0] ?? rows[0] ?? null;
+  return {
+    total: rows.length,
+    published: published.length,
+    drafts: rows.filter((r) => r.status === 'draft').length,
+    retired: rows.filter((r) => r.status === 'retired').length,
+    latest: latestRow
+      ? {
+          slug: latestRow.slug,
+          title: latestRow.title,
+          excerpt: latestRow.excerpt,
+          category: latestRow.category,
+          author: latestRow.author,
+          date: latestRow.date,
+          readTime: latestRow.read_time,
+          coverImage: latestRow.cover_image,
+          content: latestRow.content,
+        }
+      : null,
+  };
 }
 
-function formatRelative(iso: string): string {
-  const delta = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(delta / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+function StatusBanner({
+  state,
+  label,
+  activeRun,
+  lastSuccess,
+}: {
+  state: Awaited<ReturnType<typeof getAdminStatus>>['state'];
+  label: string;
+  activeRun: boolean;
+  lastSuccess: string | null;
+}) {
+  // A single banner that dominates the fold — the operator's primary signal.
+  const cfg = {
+    ok:            { icon: CheckCircle2, chip: 'bg-success/10',          text: 'text-success',   title: 'Pipeline healthy' },
+    running:       { icon: Radio,        chip: 'bg-primary-container/30', text: 'text-primary',  title: 'Pipeline running' },
+    failing:       { icon: AlertTriangle, chip: 'bg-error/10',            text: 'text-error',    title: 'Last run failed' },
+    idle:          { icon: Clock,        chip: 'bg-surface-container',    text: 'text-on-surface-variant', title: 'No runs yet' },
+    unconfigured:  { icon: AlertTriangle, chip: 'bg-warning/10',          text: 'text-warning',  title: 'Configuration incomplete' },
+  }[state];
+  const Icon = cfg.icon;
+
+  return (
+    <div className="flex flex-col gap-4 rounded-xl border border-outline-variant bg-surface-lowest p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-start gap-4">
+        <span
+          aria-hidden="true"
+          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${cfg.chip} ${cfg.text}`}
+        >
+          <Icon className={`h-5 w-5 ${activeRun ? 'soft-pulse' : ''}`} />
+        </span>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface-muted">
+            Pipeline
+          </p>
+          <p className="mt-0.5 text-lg font-bold text-on-bg">{cfg.title}</p>
+          <p className="mt-1 text-[13px] leading-relaxed text-on-surface-variant">
+            {label}
+            {lastSuccess && state !== 'running' && state !== 'ok' && (
+              <> · Last success {lastSuccess}.</>
+            )}
+          </p>
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+        <RunNowButton />
+        <Link
+          href="/admin/automation"
+          className="cta-secondary inline-flex items-center gap-1.5 rounded-md px-4 py-2.5 text-[12px] uppercase tracking-[0.14em]"
+        >
+          Runs
+          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function KpiCard({
+  label,
+  value,
+  hint,
+  tone = 'neutral',
+  href,
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+  tone?: 'neutral' | 'primary' | 'warning';
+  href?: string;
+}) {
+  const toneCls =
+    tone === 'primary'
+      ? 'text-primary'
+      : tone === 'warning'
+        ? 'text-warning'
+        : 'text-on-bg';
+  const Inner = (
+    <>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface-muted">
+        {label}
+      </p>
+      <p className={`mt-2 text-3xl font-extrabold tracking-[-0.02em] ${toneCls}`}>
+        {value}
+      </p>
+      {hint && (
+        <p className="mt-1 text-[12px] text-on-surface-muted">{hint}</p>
+      )}
+    </>
+  );
+  const base =
+    'block rounded-xl border border-outline-variant bg-surface-lowest p-5 transition-colors';
+  if (href) {
+    return (
+      <Link href={href} className={`${base} hover:border-outline hover:bg-surface-low`}>
+        {Inner}
+      </Link>
+    );
+  }
+  return <div className={base}>{Inner}</div>;
 }
 
 export default async function AdminOverviewPage() {
-  const [blogPosts, runs] = await Promise.all([getAllPosts(), fetchRuns()]);
+  const [{ total, published, drafts, retired, latest }, status] = await Promise.all([
+    fetchAdminCatalog(),
+    getAdminStatus(),
+  ]);
 
-  const total = blogPosts.length;
-  const categoryCount = new Set(blogPosts.map((p) => p.category)).size;
-  const authors = new Set(blogPosts.map((p) => p.author)).size;
-  const latest = blogPosts[0];
-  const activeRun = runs.find((r) => r.status === 'running');
-  const lastSuccess = runs.find((r) => r.status === 'success');
-  const successCount = runs.filter((r) => r.status === 'success').length;
-  const failCount = runs.filter((r) => r.status === 'failed').length;
-
-  const categoryBreakdown = ['Security Research', 'Threats', 'How-To', 'Compliance'].map((c) => ({
-    name: c,
-    count: blogPosts.filter((p) => p.category === c).length,
-  }));
-  const maxCount = Math.max(1, ...categoryBreakdown.map((c) => c.count));
+  const lastSuccessRel = status.lastSuccess
+    ? formatRelative(status.lastSuccess.started_at)
+    : null;
 
   return (
-    <div className="space-y-12">
-      {/* Hero */}
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-orange-600">
-            Editor Desk
-          </p>
-          <h1 className="mt-2 font-playfair text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">
-            Welcome back.
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-600">
-            {activeRun
-              ? 'A pipeline run is live. Hang tight — a new editorial is on its way.'
-              : lastSuccess
-                ? `Last published ${formatRelative(lastSuccess.started_at)} · ${successCount} successful run${successCount === 1 ? '' : 's'} recorded.`
-                : 'No automation runs yet. Fire the pipeline to publish your first editorial.'}
-          </p>
-        </div>
-        <RunNowButton />
+    <div className="space-y-8">
+      {/* Greeting row */}
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+          Editor desk
+        </p>
+        <h1 className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-on-bg">
+          Good to see you.
+        </h1>
+        <p className="mt-2 text-sm text-on-surface-variant">
+          {status.state === 'running'
+            ? 'Hold tight — a pipeline run is in progress.'
+            : status.state === 'failing'
+              ? 'The most recent automation run failed. Check the details and re-run when ready.'
+              : lastSuccessRel
+                ? `Last editorial shipped ${lastSuccessRel}. ${status.successCount} successful run${status.successCount === 1 ? '' : 's'} this week.`
+                : 'No automation runs yet. Fire the pipeline to publish the first editorial.'}
+        </p>
       </div>
 
-      {/* Status strip */}
+      {/* Status banner — the one thing that matters most on open */}
+      <StatusBanner
+        state={status.state}
+        label={status.label}
+        activeRun={status.state === 'running'}
+        lastSuccess={lastSuccessRel}
+      />
+
+      {/* KPI row — 4 glanceable numbers */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[
-          { label: 'Published', value: total, accent: true },
-          { label: 'Categories', value: categoryCount },
-          { label: 'Bylines', value: authors },
-          { label: 'Success Rate', value: runs.length > 0 ? `${Math.round((successCount / runs.length) * 100)}%` : '—' },
-        ].map((s) => (
-          <div key={s.label} className="rounded-lg bg-[#f0ece4] p-5">
-            <p className={`font-playfair text-3xl font-bold ${s.accent ? 'text-orange-600' : 'text-gray-900'}`}>
-              {typeof s.value === 'number' ? String(s.value).padStart(2, '0') : s.value}
-            </p>
-            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-700">
-              {s.label}
-            </p>
-          </div>
-        ))}
+        <KpiCard label="Published" value={published} tone="primary" href="/admin/posts" hint="Live on site" />
+        <KpiCard label="Drafts" value={drafts} tone={drafts > 0 ? 'warning' : 'neutral'} href="/admin/posts" hint={drafts > 0 ? 'Waiting for you' : 'None pending'} />
+        <KpiCard label="Retired" value={retired} href="/admin/posts" hint="Hidden from public" />
+        <KpiCard
+          label="Success rate"
+          value={status.runs.length > 0 ? `${Math.round((status.successCount / status.runs.length) * 100)}%` : '—'}
+          href="/admin/automation"
+          hint={status.runs.length > 0 ? `${status.successCount}/${status.runs.length} recent runs` : 'No runs yet'}
+        />
       </div>
 
-      {/* Two-column body */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Left: Latest + category chart */}
-        <div className="space-y-8 lg:col-span-2">
-          {/* Latest card */}
-          {latest && (
-            <div>
-              <div className="mb-4 flex items-center justify-between border-b border-gray-300 pb-3">
-                <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-700">
-                  Latest Editorial
-                </h2>
-                <span className="h-[2px] w-16 bg-orange-600" />
-              </div>
-              <div className="grid grid-cols-1 gap-5 rounded-lg bg-white p-5 ring-1 ring-gray-100 md:grid-cols-5">
-                <div className="relative h-40 w-full overflow-hidden rounded-md bg-gray-900 md:col-span-2 md:h-full">
-                  <Image src={latest.coverImage} alt={latest.title} fill className="object-cover" />
+      {/* Main grid — latest post + quick actions */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Latest post takes 2/3 */}
+        {latest && (
+          <section className="lg:col-span-2">
+            <header className="mb-3 flex items-end justify-between">
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface-muted">
+                Latest editorial
+              </h2>
+              <Link
+                href={`/blog/${latest.slug}`}
+                className="text-[12px] font-semibold text-primary hover:text-primary-hover"
+              >
+                View live →
+              </Link>
+            </header>
+            <article className="overflow-hidden rounded-xl border border-outline-variant bg-surface-lowest">
+              <div className="grid grid-cols-1 md:grid-cols-5">
+                <div className="relative aspect-[4/3] md:col-span-2 md:aspect-auto">
+                  <Image
+                    src={latest.coverImage}
+                    alt={latest.title}
+                    fill
+                    sizes="(min-width:768px) 40vw, 100vw"
+                    className="object-cover"
+                  />
                 </div>
-                <div className="md:col-span-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-orange-600">
-                    {latest.category} · {latest.date}
-                  </p>
-                  <h3 className="mt-2 font-playfair text-xl font-semibold leading-snug text-gray-900">
-                    {latest.title}.
-                  </h3>
-                  <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-gray-600">
-                    {latest.excerpt}
-                  </p>
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <Link
-                      href={`/blog/${latest.slug}`}
-                      className="rounded-sm bg-orange-700 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-white transition-colors hover:bg-orange-800"
-                    >
-                      View Live
-                    </Link>
+                <div className="flex flex-col justify-between gap-4 p-5 md:col-span-3">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+                      {latest.category} · {latest.date}
+                    </p>
+                    <h3 className="mt-2 text-lg font-bold leading-snug tracking-[-0.02em] text-on-bg md:text-xl">
+                      {latest.title}
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-on-surface-variant">
+                      {latest.excerpt}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-[12px]">
                     <Link
                       href={`/admin/posts/${latest.slug}`}
-                      className="rounded-sm border border-gray-300 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-700 transition-colors hover:border-orange-600 hover:text-orange-600"
+                      className="cta-secondary inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-[12px]"
                     >
+                      <PenLine className="h-3.5 w-3.5" aria-hidden="true" />
                       Edit
                     </Link>
-                    <span className="ml-auto text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-400">
-                      {latest.readTime} min read
+                    <Link
+                      href={`/blog/${latest.slug}`}
+                      className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-[12px] text-on-surface-variant transition-colors hover:text-on-bg"
+                    >
+                      <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                      View
+                    </Link>
+                    <span className="ml-auto text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface-muted">
+                      {latest.readTime} min
                     </span>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            </article>
+          </section>
+        )}
 
-          {/* Category breakdown */}
-          <div>
-            <div className="mb-4 flex items-center justify-between border-b border-gray-300 pb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-700">
-                Category Mix
-              </h2>
-              <span className="h-[2px] w-16 bg-orange-600" />
-            </div>
-            <div className="space-y-3 rounded-lg bg-white p-5 ring-1 ring-gray-100">
-              {categoryBreakdown.map((c) => (
-                <div key={c.name} className="flex items-center gap-4">
-                  <p className="w-36 shrink-0 text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-700">
-                    {c.name}
-                  </p>
-                  <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-[#f0ece4]">
-                    <div
-                      className="absolute inset-y-0 left-0 rounded-full bg-orange-600"
-                      style={{ width: `${(c.count / maxCount) * 100}%` }}
-                    />
-                  </div>
-                  <p className="w-8 shrink-0 text-right font-playfair text-sm font-semibold text-gray-900">
-                    {String(c.count).padStart(2, '0')}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Quick actions stack */}
+        <section className="space-y-3">
+          <header>
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface-muted">
+              Quick actions
+            </h2>
+          </header>
+          <QuickAction href="/admin/posts/new" label="Draft new editorial" icon={PlusCircle} primary />
+          <QuickAction href="/admin/posts" label={`Browse library (${total})`} icon={BookOpen} />
+          <QuickAction href="/admin/automation" label="Pipeline history" icon={Radio} />
+        </section>
+      </div>
 
-        {/* Right: Pipeline + quick links */}
-        <div className="space-y-8">
-          {/* Pipeline */}
-          <div>
-            <div className="mb-4 flex items-center justify-between border-b border-gray-300 pb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-700">
-                Pipeline
-              </h2>
-              <Link
-                href="/admin/automation"
-                className="text-[10px] font-semibold uppercase tracking-[0.25em] text-orange-600 hover:text-orange-800"
+      {/* Compact recent runs — 5 items, all detail lives on /admin/automation */}
+      {status.runs.length > 0 && (
+        <section>
+          <header className="mb-3 flex items-end justify-between">
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface-muted">
+              Recent runs
+            </h2>
+            <Link
+              href="/admin/automation"
+              className="text-[12px] font-semibold text-primary hover:text-primary-hover"
+            >
+              View all →
+            </Link>
+          </header>
+          <ul className="overflow-hidden rounded-xl border border-outline-variant bg-surface-lowest">
+            {status.runs.slice(0, 5).map((r, i) => (
+              <li
+                key={r.id}
+                className={`flex items-center gap-4 px-5 py-3 text-[13px] ${
+                  i > 0 ? 'border-t border-outline-variant' : ''
+                }`}
               >
-                Configure →
-              </Link>
-            </div>
-            <div className="rounded-lg bg-white p-5 ring-1 ring-gray-100">
-              <div className="flex items-center gap-3">
                 <span
-                  className={`inline-block h-2.5 w-2.5 rounded-full ${
-                    activeRun ? 'animate-pulse bg-orange-500' : failCount > successCount ? 'bg-red-500' : 'bg-green-500'
+                  aria-hidden="true"
+                  className={`inline-block h-2 w-2 shrink-0 rounded-full ${
+                    r.status === 'success'
+                      ? 'bg-success'
+                      : r.status === 'failed'
+                        ? 'bg-error'
+                        : 'bg-primary soft-pulse'
                   }`}
                 />
-                <p className="font-playfair text-sm font-semibold text-gray-900">
-                  {activeRun ? 'Run in progress' : lastSuccess ? 'Healthy' : 'Idle'}
+                <span className="w-20 shrink-0 text-on-surface-muted">
+                  {formatRelative(r.started_at)}
+                </span>
+                <span className="w-20 shrink-0 rounded-full bg-surface-container px-2 py-0.5 text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
+                  {r.trigger}
+                </span>
+                <p className="min-w-0 flex-1 truncate text-on-bg">
+                  {r.topic ?? r.error ?? 'n/a'}
                 </p>
-              </div>
-              <ul className="mt-4 space-y-2 text-xs text-gray-600">
-                <li className="flex items-center justify-between">
-                  <span>Last success</span>
-                  <span className="font-semibold text-gray-900">
-                    {lastSuccess ? formatRelative(lastSuccess.started_at) : '—'}
-                  </span>
-                </li>
-                <li className="flex items-center justify-between">
-                  <span>Recent runs</span>
-                  <span className="font-semibold text-gray-900">
-                    {successCount}/{runs.length} succeeded
-                  </span>
-                </li>
-                <li className="flex items-center justify-between">
-                  <span>Next cron</span>
-                  <span className="font-semibold text-gray-900">06:00 UTC</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Quick actions */}
-          <div>
-            <div className="mb-4 flex items-center justify-between border-b border-gray-300 pb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-700">
-                Quick Actions
-              </h2>
-              <span className="h-[2px] w-16 bg-orange-600" />
-            </div>
-            <div className="space-y-2">
-              {[
-                { href: '/admin/posts/new', label: 'Draft New Editorial', primary: true },
-                { href: '/admin/posts', label: 'Browse Library' },
-                { href: '/admin/automation', label: 'Automation' },
-                { href: '/admin/settings', label: 'Journal Settings' },
-              ].map((a) => (
-                <Link
-                  key={a.href}
-                  href={a.href}
-                  className={`block rounded-md px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] transition-colors ${
-                    a.primary
-                      ? 'bg-orange-700 text-white hover:bg-orange-800'
-                      : 'bg-white text-gray-700 ring-1 ring-gray-100 hover:bg-[#f0ece4] hover:text-orange-600'
-                  }`}
-                >
-                  {a.label} →
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent runs */}
-      <div>
-        <div className="mb-4 flex items-center justify-between border-b border-gray-300 pb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-700">
-            Recent Runs
-          </h2>
-          <Link
-            href="/admin/automation"
-            className="text-[10px] font-semibold uppercase tracking-[0.25em] text-orange-600 hover:text-orange-800"
-          >
-            View all →
-          </Link>
-        </div>
-        {runs.length === 0 ? (
-          <div className="rounded-lg bg-[#f0ece4] p-8 text-center text-sm text-gray-600">
-            No runs yet. Use &ldquo;Run Now&rdquo; to fire the pipeline.
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-lg bg-white ring-1 ring-gray-100">
-            <ul className="divide-y divide-gray-100">
-              {runs.map((r) => (
-                <li key={r.id} className="flex items-center gap-4 px-5 py-3 text-xs">
-                  <span
-                    className={`inline-block h-2 w-2 shrink-0 rounded-full ${
-                      r.status === 'success'
-                        ? 'bg-green-500'
-                        : r.status === 'failed'
-                          ? 'bg-red-500'
-                          : 'animate-pulse bg-orange-500'
-                    }`}
-                  />
-                  <span className="w-20 shrink-0 text-gray-500">{formatRelative(r.started_at)}</span>
-                  <span className="w-16 shrink-0 rounded-sm bg-gray-100 px-2 py-1 text-center text-[10px] font-semibold uppercase tracking-wider text-gray-700">
-                    {r.trigger}
-                  </span>
-                  <p className="min-w-0 flex-1 truncate font-playfair text-sm font-semibold text-gray-900">
-                    {r.topic ?? r.error ?? 'n/a'}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
+  );
+}
+
+function QuickAction({
+  href,
+  label,
+  icon: Icon,
+  primary,
+}: {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
+  primary?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`group flex items-center justify-between rounded-md px-4 py-3 text-[13px] font-semibold transition-colors ${
+        primary
+          ? 'cta-primary'
+          : 'border border-outline-variant bg-surface-lowest text-on-surface-variant hover:border-outline hover:text-on-bg'
+      }`}
+    >
+      <span className="inline-flex items-center gap-2.5">
+        <Icon className={`h-4 w-4 ${primary ? '' : 'text-on-surface-muted'}`} aria-hidden="true" />
+        {label}
+      </span>
+      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+    </Link>
   );
 }

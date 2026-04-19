@@ -1,4 +1,4 @@
--- InFocusIT — Supabase schema
+-- Infocus-IT — Supabase schema
 -- Apply via: psql $SUPABASE_DB_URL -f lib/supabase/schema.sql
 -- Or paste into Supabase Studio → SQL Editor.
 
@@ -13,7 +13,7 @@ create table if not exists public.posts (
   category text not null check (category in (
     'Security Research', 'Threats', 'How-To', 'Compliance'
   )),
-  author text not null default 'InFocusIT Desk',
+  author text not null default 'Infocus-IT Desk',
   date text not null,
   read_time int not null default 8,
   cover_image text not null,
@@ -72,3 +72,34 @@ drop policy if exists "covers_public_read" on storage.objects;
 create policy "covers_public_read"
   on storage.objects for select
   using (bucket_id = 'covers');
+
+-- Newsletter subscribers ----------------------------------------------------
+create table if not exists public.subscribers (
+  id uuid primary key default gen_random_uuid(),
+  email text unique not null,
+  -- 'active' subscribers receive the daily brief.
+  -- 'unsubscribed' have opted out but we keep the row (compliance audit).
+  status text not null default 'active'
+    check (status in ('active', 'unsubscribed', 'bounced')),
+  -- Opaque token embedded in unsubscribe links; rotated per subscription.
+  unsubscribe_token text unique not null,
+  -- Optional source signal so we can see where subs came from.
+  source text,
+  last_sent_at timestamptz,
+  bounce_count int not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Case-insensitive lookup on email.
+create unique index if not exists subscribers_email_lower_idx
+  on public.subscribers (lower(email));
+
+create index if not exists subscribers_status_idx
+  on public.subscribers (status);
+
+alter table public.subscribers enable row level security;
+
+-- No public read policy — subscribers are private.
+-- Service role bypasses RLS for both writes (from /api/newsletter/*) and
+-- reads (from the daily dispatch script).

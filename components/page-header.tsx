@@ -11,21 +11,21 @@ export function PageHeader({
 }) {
   return (
     <section className="px-6 pt-12 md:pt-16">
-      <div className="mx-auto max-w-6xl">
-        <p className="fade-in mb-6 text-xs font-semibold uppercase tracking-[0.25em] text-orange-600">
+      <div className="mx-auto max-w-7xl">
+        <p className="fade-in label-overline">
           {kicker}
         </p>
-        <h1 className="fade-in stagger-1 font-playfair text-5xl font-bold leading-[1.1] tracking-tight text-gray-900 md:text-6xl">
+        <h1 className="fade-in stagger-1 mt-5 max-w-4xl text-[2.25rem] font-extrabold leading-[1.04] tracking-[-0.035em] text-on-bg md:text-[4rem]">
           {title}
           {accent && (
             <>
               {' '}
-              <span className="italic text-orange-600">{accent}</span>
+              <span className="italic-accent">{accent}</span>
             </>
           )}
         </h1>
         {subtitle && (
-          <p className="fade-in stagger-2 mt-6 max-w-2xl text-lg leading-relaxed text-gray-600">
+          <p className="fade-in stagger-2 mt-6 max-w-2xl text-base leading-relaxed text-on-surface-variant md:text-lg">
             {subtitle}
           </p>
         )}

@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/page-header';
 import { getAllPosts } from '@/lib/blog-data';
 
 export const metadata = {
-  title: 'Perspectives | InFocusIT',
+  title: 'Perspectives | Infocus-IT',
   description: 'Op-eds, essays, and long-form commentary on the state of cybersecurity.',
 };
 
@@ -36,8 +36,9 @@ export default async function PerspectivesPage() {
   const essays = blogPosts.slice(3);
 
   return (
-    <div className="min-h-screen bg-[#faf8f4]">
+    <div className="min-h-screen bg-surface">
       <Navbar />
+      <main id="main">
 
       <PageHeader
         kicker="Editorial Perspectives"
@@ -47,43 +48,43 @@ export default async function PerspectivesPage() {
       />
 
       {/* Lead essay */}
-      <section className="px-6 py-12 md:py-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-5">
-            <div className="md:col-span-3">
+      <section className="px-6 py-14 md:py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
+            <div className="md:col-span-7">
               <Link href={`/blog/${lead.slug}`} className="group block">
-                <div className="relative h-80 w-full overflow-hidden rounded-lg bg-gray-900 md:h-[420px]">
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-surface-high">
                   <Image
                     src={lead.coverImage}
                     alt={lead.title}
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(min-width:768px) 58vw, 100vw"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                   />
                 </div>
-                <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.25em] text-orange-600">
+                <p className="mt-6 label-overline">
                   Lead Essay · {lead.category}
                 </p>
-                <h2 className="mt-3 font-playfair text-3xl font-bold leading-tight text-gray-900 transition-colors group-hover:text-orange-600 md:text-4xl">
-                  {lead.title}.
+                <h2 className="mt-3 font-playfair text-3xl font-semibold leading-[1.1] tracking-tight text-on-bg transition-colors group-hover:text-primary-ink md:text-[2.5rem]">
+                  {lead.title}
                 </h2>
-                <p className="mt-3 text-base leading-relaxed text-gray-600">{lead.excerpt}</p>
-                <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <p className="mt-4 text-base leading-relaxed text-on-surface-variant">{lead.excerpt}</p>
+                <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-on-surface-muted">
                   By {lead.author} · {lead.date}
                 </p>
               </Link>
             </div>
 
-            <aside className="md:col-span-2">
-              <div className="mb-4 flex items-center justify-between border-b border-gray-300 pb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-700">
+            <aside className="md:col-span-5">
+              <header className="mb-6">
+                <h3 className="accent-bar font-playfair text-xl font-semibold text-on-bg">
                   The Voices
                 </h3>
-                <span className="h-[2px] w-16 bg-orange-600" />
-              </div>
-              <ul className="space-y-6">
+              </header>
+              <ul className="space-y-5">
                 {voices.map((v) => (
-                  <li key={v.name} className="flex gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-xs font-bold text-white">
+                  <li key={v.name} className="flex gap-4 rounded-2xl bg-surface-lowest p-5 shadow-ambient-sm">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-signature text-xs font-bold text-white shadow-ambient-sm">
                       {v.name
                         .split(' ')
                         .map((n) => n[0])
@@ -91,11 +92,11 @@ export default async function PerspectivesPage() {
                         .join('')}
                     </div>
                     <div>
-                      <p className="font-playfair text-lg font-semibold text-gray-900">{v.name}</p>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-orange-600">
+                      <p className="font-playfair text-lg font-semibold text-on-bg">{v.name}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-primary-ink">
                         {v.role}
                       </p>
-                      <p className="mt-2 text-sm leading-relaxed text-gray-600">{v.bio}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">{v.bio}</p>
                     </div>
                   </li>
                 ))}
@@ -106,50 +107,52 @@ export default async function PerspectivesPage() {
       </section>
 
       {/* Essay list */}
-      <section className="px-6 pb-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-8 flex items-center justify-between border-b border-gray-300 pb-3">
-            <h3 className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-700">
+      <section className="px-6 pb-20">
+        <div className="mx-auto max-w-7xl">
+          <header className="mb-10">
+            <h3 className="accent-bar font-playfair text-2xl font-semibold text-on-bg">
               Further Essays
             </h3>
-            <span className="h-[2px] w-16 bg-orange-600" />
-          </div>
+          </header>
 
-          <div className="divide-y divide-gray-200">
+          <ul className="space-y-4">
             {essays.map((post, i) => (
-              <Link
-                key={post.slug}
-                href={`/blog/${post.slug}`}
-                className="group grid grid-cols-1 gap-6 py-8 md:grid-cols-12"
-              >
-                <p className="font-playfair text-2xl font-bold text-gray-300 md:col-span-1">
-                  {String(i + 1).padStart(2, '0')}
-                </p>
-                <div className="md:col-span-7">
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-orange-600">
-                    {post.category} · {post.readTime} min read
+              <li key={post.slug}>
+                <Link
+                  href={`/blog/${post.slug}`}
+                  className="group grid grid-cols-1 items-center gap-6 rounded-2xl p-4 transition-colors hover:bg-surface-container md:grid-cols-12"
+                >
+                  <p className="text-3xl font-extrabold text-on-surface-muted/70 transition-colors group-hover:text-primary md:col-span-1">
+                    {String(i + 1).padStart(2, '0')}
                   </p>
-                  <h4 className="font-playfair text-2xl font-semibold leading-snug text-gray-900 transition-colors group-hover:text-orange-600">
-                    {post.title}.
-                  </h4>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-600">{post.excerpt}</p>
-                </div>
-                <div className="md:col-span-4">
-                  <div className="relative h-40 w-full overflow-hidden rounded-lg bg-gray-900">
-                    <Image
-                      src={post.coverImage}
-                      alt={post.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
+                  <div className="md:col-span-7">
+                    <p className="label-overline">
+                      {post.category} · {post.readTime} min read
+                    </p>
+                    <h4 className="mt-2 font-playfair text-xl font-semibold leading-snug text-on-bg transition-colors group-hover:text-primary-ink md:text-2xl">
+                      {post.title}
+                    </h4>
+                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-on-surface-variant">{post.excerpt}</p>
                   </div>
-                </div>
-              </Link>
+                  <div className="md:col-span-4">
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-surface-high">
+                      <Image
+                        src={post.coverImage}
+                        alt={post.title}
+                        fill
+                        sizes="(min-width:768px) 33vw, 100vw"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                      />
+                    </div>
+                  </div>
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
 
+      </main>
       <Footer />
     </div>
   );

@@ -35,7 +35,7 @@ export const staticBlogPosts: BlogPost[] = [
     excerpt:
       'Examining how threat actors are deploying advanced encryption techniques to evade detection and maximize damage.',
     category: 'Threats',
-    author: 'Marcus Chen',
+    author: 'Infocus-IT Team',
     date: 'April 15, 2026',
     readTime: 12,
     coverImage: '/images/ransomware-cover.jpg',
@@ -54,7 +54,7 @@ export const staticBlogPosts: BlogPost[] = [
     excerpt:
       'A comprehensive analysis of zero-day vulnerabilities and why they remain the most dangerous type of security flaw.',
     category: 'Security Research',
-    author: 'Dr. Sarah Williams',
+    author: 'Infocus-IT Team',
     date: 'April 10, 2026',
     readTime: 15,
     coverImage: '/images/zero-day-cover.jpg',
@@ -71,7 +71,7 @@ export const staticBlogPosts: BlogPost[] = [
     excerpt:
       'Exploring why phishing remains the leading attack vector despite advanced security tools.',
     category: 'How-To',
-    author: 'James Peterson',
+    author: 'Infocus-IT Team',
     date: 'April 5, 2026',
     readTime: 10,
     coverImage: '/images/phishing-cover.jpg',
@@ -86,7 +86,7 @@ export const staticBlogPosts: BlogPost[] = [
     excerpt:
       'Best practices for securing APIs in modern microservices environments.',
     category: 'How-To',
-    author: 'David Kumar',
+    author: 'Infocus-IT Team',
     date: 'March 30, 2026',
     readTime: 14,
     coverImage: '/images/api-security-cover.jpg',
@@ -101,7 +101,7 @@ export const staticBlogPosts: BlogPost[] = [
     excerpt:
       'Understanding supply chain attack vectors and implementing defense strategies across your entire software ecosystem.',
     category: 'Threats',
-    author: 'Elena Rodriguez',
+    author: 'Infocus-IT Team',
     date: 'March 25, 2026',
     readTime: 13,
     coverImage: '/images/supply-chain-cover.jpg',
@@ -116,7 +116,7 @@ export const staticBlogPosts: BlogPost[] = [
     excerpt:
       'How quantum computing will break current encryption and what organizations need to do to prepare.',
     category: 'Security Research',
-    author: 'Prof. Alexander Norton',
+    author: 'Infocus-IT Team',
     date: 'March 18, 2026',
     readTime: 16,
     coverImage: '/images/quantum-cover.jpg',
