@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
  * "Insights/Curation/Perspectives" → shorter, sharper signposts.
  */
 const navItems = [
+  { label: 'News SEO AI', href: '/news-seo',    desc: 'Hindi News SEO & Editorial Dashboard' },
   { label: 'Latest',   href: '/',             desc: "Today's dispatch" },
   { label: 'Topics',   href: '/curation',     desc: 'Browse by category' },
   { label: 'Analysis', href: '/perspectives', desc: 'Long-form essays' },

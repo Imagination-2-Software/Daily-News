@@ -375,10 +375,10 @@ function QuickAction({
       }`}
     >
       <span className="inline-flex items-center gap-2.5">
-        <Icon className={`h-4 w-4 ${primary ? '' : 'text-on-surface-muted'}`} aria-hidden="true" />
+        <Icon className={`h-4 w-4 ${primary ? '' : 'text-on-surface-muted'}`} />
         {label}
       </span>
-      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+      <ArrowUpRight className="h-3.5 w-3.5" />
     </Link>
   );
 }
