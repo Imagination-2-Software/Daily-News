@@ -313,6 +313,31 @@ export default async function BlogPostPage({
                 padding: 0;
                 color: var(--on-surface);
               }
+              .editorial-body figure {
+                margin: 2.25rem 0;
+              }
+              .editorial-body figure img {
+                width: 100%;
+                border-radius: 1rem;
+                object-fit: cover;
+                box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+              }
+              .editorial-body figure figcaption {
+                margin-top: 0.625rem;
+                font-size: 0.8125rem;
+                line-height: 1.5;
+                color: var(--on-surface-muted);
+                text-align: center;
+                font-style: italic;
+              }
+              .editorial-body .news-stat-box {
+                background: color-mix(in srgb, var(--primary) 6%, transparent);
+                border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+                border-left: 4px solid var(--primary);
+                padding: 1.25rem 1.5rem;
+                border-radius: 0.75rem;
+                margin: 2rem 0;
+              }
             `}</style>
             <div
               id="article-body"

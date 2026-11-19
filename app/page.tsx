@@ -4,6 +4,7 @@ import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { FooterNewsletter } from '@/components/footer-newsletter';
+import { TodaysHeadlinesSection } from '@/components/todays-headlines-section';
 import { getAllPosts } from '@/lib/blog-data';
 import { siteJsonLd } from '@/lib/seo';
 
@@ -159,95 +160,13 @@ export default async function Home() {
         </section>
 
         {/* ===========================================================
-            TODAY'S HIGHLIGHT — 1 big card + 3 stacked cards
+            TODAY'S HEADLINES — Centralized all-news interactive hub
             =========================================================== */}
-        {showHighlight && (
-        <section className="px-6 pt-20">
-          <div className="mx-auto max-w-7xl">
-            <h2 className="text-[2rem] font-extrabold tracking-[-0.025em] text-on-bg md:text-[2.5rem]">
-              Today&rsquo;s highlight
-            </h2>
-
-            <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12">
-              {/* BIG CARD */}
-              <article className="flex flex-col">
-                <Link
-                  href={`/blog/${highlightMain.slug}`}
-                  className="group relative block aspect-[4/3] w-full overflow-hidden rounded-xl bg-surface-container"
-                >
-                  <Image
-                    src={highlightMain.coverImage}
-                    alt={highlightMain.title}
-                    fill
-                    sizes="(min-width:1024px) 45vw, 100vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                    priority
-                  />
-                  <span className={`absolute left-5 top-5 ${OVERLAY_PILL}`}>
-                    {highlightMain.category}
-                  </span>
-                </Link>
-                <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-on-surface-muted">
-                  {formatMeta(highlightMain.date)} / POST BY{' '}
-                  <span className="text-on-bg">{highlightMain.author.toUpperCase()}</span>
-                </p>
-                <h3 className="mt-3 text-[1.75rem] font-extrabold leading-[1.15] tracking-[-0.025em] text-on-bg">
-                  <Link
-                    href={`/blog/${highlightMain.slug}`}
-                    className="transition-colors hover:text-primary"
-                  >
-                    {highlightMain.title}
-                  </Link>
-                </h3>
-                <p className="mt-3 line-clamp-3 text-[15px] leading-relaxed text-on-surface-variant">
-                  {highlightMain.excerpt}
-                </p>
-                <Link
-                  href={`/blog/${highlightMain.slug}`}
-                  className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-on-bg transition-colors hover:text-primary"
-                >
-                  Read More
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </article>
-
-              {/* STACKED CARDS */}
-              <div className="flex flex-col gap-5">
-                {highlightSide.map((post) => (
-                  <Link
-                    key={post.slug}
-                    href={`/blog/${post.slug}`}
-                    className="group flex items-stretch gap-5 rounded-xl border border-outline-variant bg-surface-lowest p-4 transition-all hover:border-primary/40 hover:shadow-ambient-sm"
-                  >
-                    <div className="relative aspect-square w-[38%] min-w-[120px] shrink-0 overflow-hidden rounded-lg bg-surface-container">
-                      <Image
-                        src={post.coverImage}
-                        alt=""
-                        fill
-                        sizes="200px"
-                        className="object-cover"
-                      />
-                      <span className={`absolute left-2 top-2 ${OVERLAY_PILL} px-2 py-0.5 text-[9px]`}>
-                        {post.category}
-                      </span>
-                    </div>
-                    <div className="flex min-w-0 flex-col justify-center">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-on-surface-muted">
-                        {formatMeta(post.date)} · {post.readTime} min read
-                      </p>
-                      <h4 className="mt-1.5 line-clamp-2 text-[17px] font-bold leading-snug tracking-[-0.015em] text-on-bg transition-colors group-hover:text-primary">
-                        {post.title}
-                      </h4>
-                      <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-on-surface-variant">
-                        {post.excerpt}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        {all.length > 0 && (
+          <TodaysHeadlinesSection
+            initialMain={highlightMain ?? all[0]}
+            posts={all}
+          />
         )}
 
         {/* ===========================================================

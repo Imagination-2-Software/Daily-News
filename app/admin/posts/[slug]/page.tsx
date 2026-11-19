@@ -84,7 +84,7 @@ export default async function AdminEditPostPage({
         </Link>
       </div>
 
-      <PostForm mode="edit" currentSlug={initial.slug} initial={initial} />
+      <PostForm mode="edit" currentSlug={initial.slug} initial={initial as any} />
     </div>
   );
 }

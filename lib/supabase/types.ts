@@ -3,7 +3,7 @@ export type PostRow = {
   slug: string;
   title: string;
   excerpt: string;
-  category: 'Security Research' | 'Threats' | 'How-To' | 'Compliance';
+  category: string;
   author: string;
   date: string;
   read_time: number;

@@ -4,15 +4,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { BlogPost } from '@/lib/blog-data';
 
-const categoryColors = {
+const categoryColors: Record<string, string> = {
   'Security Research': 'bg-blue-100 text-blue-700',
   'Threats': 'bg-red-100 text-red-700',
   'How-To': 'bg-orange-100 text-orange-700',
   'Compliance': 'bg-green-100 text-green-700',
+  'धर्म एवं संस्कृति (Religion & Culture)': 'bg-amber-100 text-amber-800',
 };
 
 export function Hero({ post }: { post: BlogPost }) {
-  const categoryColor = categoryColors[post.category];
+  const categoryColor = categoryColors[post.category] || 'bg-blue-100 text-blue-700';
 
   return (
     <Link href={`/blog/${post.slug}`}>
