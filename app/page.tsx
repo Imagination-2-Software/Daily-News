@@ -164,7 +164,7 @@ export default async function Home() {
             =========================================================== */}
         {all.length > 0 && (
           <TodaysHeadlinesSection
-            initialMain={highlightMain ?? all[0]}
+            initialMain={all[0]}
             posts={all}
           />
         )}

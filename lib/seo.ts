@@ -88,23 +88,24 @@ export function articleJsonLd({ post, publishedAt, modifiedAt }: ArticleSchemaIn
 
   return {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': 'NewsArticle',
     mainEntityOfPage: { '@type': 'WebPage', '@id': url },
     headline: post.title,
     description: post.excerpt,
-    image: [post.coverImage],
+    image: [absoluteUrl(post.coverImage)],
     articleSection: post.category,
-    inLanguage: SITE.locale.replace('_', '-'),
+    keywords: post.tags?.join(', '),
+    inLanguage: post.tags && post.tags.some(t => t.includes('काशी')) ? 'hi-IN' : SITE.locale.replace('_', '-'),
     datePublished: published ?? undefined,
     dateModified: modified ?? undefined,
     wordCount: wordCountFromHtml(post.content),
     author: {
-      '@type': 'Organization',
+      '@type': 'Person',
       name: post.author || SITE.author,
       url: canonical('/about'),
     },
     publisher: {
-      '@type': 'Organization',
+      '@type': 'NewsMediaOrganization',
       name: SITE.name,
       url: canonical('/'),
       logo: {
@@ -112,7 +113,6 @@ export function articleJsonLd({ post, publishedAt, modifiedAt }: ArticleSchemaIn
         url: absoluteUrl(SITE.logoPath),
       },
     },
-    // Let voice assistants read the excerpt and any h2 headings aloud.
     speakable: {
       '@type': 'SpeakableSpecification',
       cssSelector: ['.editorial-body h2', '.editorial-body p:first-of-type'],

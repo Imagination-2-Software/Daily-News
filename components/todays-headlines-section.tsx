@@ -200,7 +200,13 @@ export function TodaysHeadlinesSection({
               return (
                 <article
                   key={post.slug}
-                  className={`group flex flex-col rounded-2xl border p-4 transition-all duration-300 ${
+                  onClick={(e) => {
+                    // Check if clicked element was a direct action/link
+                    const target = e.target as HTMLElement;
+                    if (target.closest('a') || target.closest('button')) return;
+                    window.location.href = `/blog/${post.slug}`;
+                  }}
+                  className={`group flex flex-col rounded-2xl border p-4 transition-all duration-300 cursor-pointer ${
                     isSelected
                       ? 'border-primary bg-primary/[0.03] shadow-md ring-1 ring-primary/30'
                       : 'border-outline-variant bg-surface-lowest hover:border-primary/40 hover:shadow-ambient-sm'

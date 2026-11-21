@@ -38,7 +38,7 @@ export async function generateMetadata({
   }
 
   const url = canonical(`/blog/${post.slug}`);
-  const ogImage = absoluteUrl(`/og/${post.slug}`);
+  const ogImage = absoluteUrl(post.coverImage || `/og/${post.slug}`);
   const publishedIso = (() => {
     const d = new Date(post.date);
     return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
@@ -49,13 +49,14 @@ export async function generateMetadata({
     description: post.excerpt,
     alternates: { canonical: url },
     authors: [{ name: post.author }],
-    keywords: [post.category, 'cybersecurity', 'editorial', post.author],
+    keywords: post.tags || [post.category, 'cybersecurity', 'editorial', post.author],
     openGraph: {
       type: 'article',
       url,
       title: post.title,
       description: post.excerpt,
       siteName: SITE.name,
+      locale: post.tags && post.tags.some((t) => t.includes('काशी')) ? 'hi_IN' : SITE.locale,
       publishedTime: publishedIso,
       modifiedTime: publishedIso,
       authors: [post.author],
